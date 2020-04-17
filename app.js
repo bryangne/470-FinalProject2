@@ -155,8 +155,8 @@ app.get("/login", redirectHome, (req, res) => {
 // Shows the grades page
 // =================================================
 app.get("/grades", redirectLogin, (req, res) => {
-  console.log("show grades");
-  console.log(cutoffs)
+  // console.log("show grades");
+  // console.log(cutoffs)
   // console.log(csvdata)
   res.write(`
     <h1>Grades</h1>
@@ -190,7 +190,7 @@ app.get("/grades", redirectLogin, (req, res) => {
   }
   // Draw the histogram
   for(i=0; i < cutoffs; i++) {
-    res.write(`<p>${i * cutoffs}%</p>`)
+    res.write(`<p>${i * increment}%</p>`)
     res.write(`<p>${histogram[i]}</p>`)
   }
   res.write(`<p>100%</p>`)
@@ -239,7 +239,7 @@ app.post("/logout", redirectLogin, (req, res) => {
 // Fetches the uploaded csv and stores it into memory
 // =================================================
 app.post("/upload", upload.single("csvInput"), function (req, res) {
-  console.log("attempt upload");
+  // console.log("attempt upload");
   // var csvString = req.files.csvInput.buffer.toString()
   const rawInput = req.file.buffer.toString();
   csvConvert({ noheader: true, output: "csv" })
@@ -248,7 +248,7 @@ app.post("/upload", upload.single("csvInput"), function (req, res) {
       csvdata = csvRow;
       cutoffs = req.body.cutoffs;
       // get the number of cutoffs and reject invalid ones
-      if (cutoffs && cutoffs > 2 && cutoffs < 10) {
+      if (cutoffs && cutoffs >= 2 && cutoffs <= 10) {
         // look for the totals row
         total = csvdata.find((entry) => entry[0] === "total");
         totalGrade = [];
@@ -265,13 +265,15 @@ app.post("/upload", upload.single("csvInput"), function (req, res) {
         });
         return res.redirect("/grades");
       }
-      console.log("invalid cutoff");
+      // console.log("invalid cutoff");
       return res.redirect("/home");
     });
 });
 
 app.post("/cutoffs", redirectLogin, (req, res) => {
-  cutoffs = req.body.updatedCutoffs
+  if(req.body.updatedCutoffs && req.body.updatedCutoffs >= 2 && req.body.updatedCutoffscutoffs <= 10) {
+    cutoffs = req.body.updatedCutoffs
+  }
   res.redirect('/grades')
 });
 
